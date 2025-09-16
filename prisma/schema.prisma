@@ -1,0 +1,238 @@
+generator client {
+    provider = "prisma-client-js"
+}
+
+datasource db {
+    provider = "mysql"
+    url      = env("DATABASE_URL")
+}
+
+model Usuario {
+    id        Int      @id @default(autoincrement()) @map("id_usuario")
+    nome      String   @map("nome_usuario") @db.VarChar(100)
+    email     String   @unique @map("email_usuario") @db.VarChar(100)
+    senha     String   @map("senha_usuario") @db.VarChar(255)
+    createdAt DateTime @default(now()) @map("data_criacao")
+    updatedAt DateTime @updatedAt @map("data_atualizacao")
+}
+
+model Cidade {
+    id        Int      @id @default(autoincrement()) @map("id_cidade")
+    nome      String   @map("nome_cidade") @db.VarChar(100)
+    uf        String   @map("uf_cidade") @db.Char(2)
+    createdAt DateTime @default(now()) @map("data_criacao")
+    updatedAt DateTime @updatedAt @map("data_atualizacao")
+
+    instituicoes Instituicao[]
+    alunos       Aluno[]
+    empresas     Empresa[]
+
+    @@map("cidade")
+}
+
+model Instituicao {
+    id           Int      @id @default(autoincrement()) @map("id_instituicao")
+    nome         String   @map("nome_insti") @db.VarChar(100)
+    nomeFantasia String   @map("nome_fantasia_insti") @db.VarChar(100)
+    cnpj         String?  @map("cnpj_insti") @db.Char(18)
+    endereco     String?  @map("endereco_insti") @db.VarChar(150)
+    cidadeId     Int      @map("cidade_id")
+    telefone     String?  @map("telefone_insti") @db.VarChar(20)
+    email        String?  @map("email_insti") @db.VarChar(100)
+    nomeDiretor  String?  @map("diretor_nome") @db.VarChar(100)
+    cpfDiretor   String?  @map("diretor_cpf") @db.Char(14)
+    createdAt    DateTime @default(now()) @map("data_criacao")
+    updatedAt    DateTime @updatedAt @map("data_atualizacao")
+
+    cidade   Cidade    @relation(fields: [cidadeId], references: [id])
+    estagios Estagio[]
+
+    @@map("instituicao")
+}
+
+model Curso {
+    id          Int      @id @default(autoincrement()) @map("id_curso")
+    nome        String   @map("nome_curso") @db.VarChar(100)
+    habilitacao String?  @map("habilitacao") @db.VarChar(100)
+    nivel       String?  @map("nivel") @db.VarChar(50)
+    createdAt   DateTime @default(now()) @map("data_criacao")
+    updatedAt   DateTime @updatedAt @map("data_atualizacao")
+
+    alunos   Aluno[]
+    estagios Estagio[]
+
+    @@map("curso")
+}
+
+model Aluno {
+    id             Int       @id @default(autoincrement()) @map("id_aluno")
+    nome           String    @map("nome_aluno") @db.VarChar(100)
+    rg             String?   @map("rg_aluno") @db.VarChar(20)
+    cpf            String?   @map("cpf_aluno") @db.Char(14)
+    endereco       String?   @map("endereco_aluno") @db.VarChar(150)
+    cidadeId       Int       @map("cidade_id")
+    cursoId        Int       @map("curso_id")
+    serie          String?   @map("serie") @db.VarChar(20)
+    telefone       String?   @map("telefone_aluno") @db.VarChar(25)
+    telefonePai    String?   @map("telefone_pai") @db.VarChar(25)
+    email          String?   @map("email_aluno") @db.VarChar(100)
+    dataNascimento DateTime? @map("dt_nascimento")
+    createdAt      DateTime  @default(now()) @map("data_criacao")
+    updatedAt      DateTime  @updatedAt @map("data_atualizacao")
+
+    cidade   Cidade    @relation(fields: [cidadeId], references: [id])
+    curso    Curso     @relation(fields: [cursoId], references: [id])
+    estagios Estagio[]
+
+    @@map("aluno")
+}
+
+model Empresa {
+    id                 Int      @id @default(autoincrement()) @map("id_empresa")
+    nome               String   @map("nome_empresa") @db.VarChar(100)
+    nomeFantasia       String   @map("nome_fantasia") @db.VarChar(100)
+    cnpj               String?  @map("cnpj_empresa") @db.Char(18)
+    cpfAutonomo        String?  @map("cpf_autonomo") @db.Char(14)
+    numClassAutonomo   String?  @map("num_class_autonomo") @db.Char(25)
+    endereco           String?  @map("endereco_empresa") @db.VarChar(150)
+    cidadeId           Int      @map("cidade_id")
+    telefone1          String?  @map("telefone_empresa1") @db.VarChar(20)
+    telefone2          String?  @map("telefone_empresa2") @db.VarChar(20)
+    email              String?  @map("email_empresa") @db.VarChar(100)
+    representante      String?  @map("representante") @db.VarChar(100)
+    cargoRepresentante String?  @map("representante_cargo") @db.VarChar(50)
+    createdAt          DateTime @default(now()) @map("data_criacao")
+    updatedAt          DateTime @updatedAt @map("data_atualizacao")
+
+    cidade   Cidade    @relation(fields: [cidadeId], references: [id])
+    estagios Estagio[]
+
+    @@map("empresa")
+}
+
+model Seguradora {
+    id        Int      @id @default(autoincrement()) @map("id_seguradora")
+    nome      String   @map("nome_seguradora") @db.VarChar(100)
+    createdAt DateTime @default(now()) @map("data_criacao")
+    updatedAt DateTime @updatedAt @map("data_atualizacao")
+
+    estagios Estagio[]
+
+    @@map("seguradora")
+}
+
+model Estagio {
+    id                     Int                        @id @default(autoincrement()) @map("id_estagio")
+    alunoId                Int                        @map("aluno_id")
+    empresaId              Int                        @map("empresa_id")
+    instituicaoId          Int                        @map("instituicao_id")
+    tipo                   TipoEstagio                @map("tipo_estagio")
+    remunerado             Boolean                    @default(false) @map("remunerado")
+    origemInstituicao      String?                    @map("origem_instituicao") @db.VarChar(100)
+    dataInicio             DateTime                   @map("data_inicio")
+    dataTermino            DateTime                   @map("data_termino")
+    cargaHorariaSemanal    Int?                       @map("carga_horaria_semanal")
+    bolsaAuxilio           Decimal?                   @map("bolsa_auxilio") @db.Decimal(10, 2)
+    seguroApolice          String?                    @map("seguro_apolice") @db.VarChar(50)
+    seguradoraId           Int?                       @map("seguradora_id")
+    status                 StatusEstagio              @default(Ativo) @map("status")
+    dataAssinatura         DateTime?                  @map("data_assinatura")
+    dataCancelamento       DateTime?                  @map("data_cancelamento")
+    possuiResponsavelMenor Boolean                    @default(false) @map("possui_responsavel_menor")
+    motivoEncerramentoId   Int?                       @map("motivo_encerramento_id")
+    motivoEncerramento     MotivoEncerramentoEstagio? @relation("EstagioMotivoEncerramento")
+    createdAt              DateTime                   @default(now()) @map("data_criacao")
+    updatedAt              DateTime                   @updatedAt @map("data_atualizacao")
+
+    aluno       Aluno              @relation(fields: [alunoId], references: [id])
+    empresa     Empresa            @relation(fields: [empresaId], references: [id])
+    instituicao Instituicao        @relation(fields: [instituicaoId], references: [id])
+    seguradora  Seguradora?        @relation(fields: [seguradoraId], references: [id])
+    horarios    EstagioHorario[]
+    relatorios  RelatorioEstagio[]
+    Curso       Curso?             @relation(fields: [cursoId], references: [id])
+    cursoId     Int?
+
+    @@map("estagio")
+}
+
+model MotivoEncerramentoEstagio {
+    id                    Int      @id @default(autoincrement()) @map("id_motivo_encerramento")
+    estagioId             Int      @unique @map("estagio_id")
+    motivoPrincipal       String   @map("motivo_principal") @db.VarChar(255)
+    motivoPrincipalOutros String?  @map("motivo_principal_outros")
+    motivosEmpresa        String?  @map("motivos_empresa")
+    motivosEmpresaOutros  String?  @map("motivos_empresa_outros")
+    dataRegistro          DateTime @default(now()) @map("data_registro")
+    createdAt             DateTime @default(now()) @map("data_criacao")
+    updatedAt             DateTime @updatedAt @map("data_atualizacao")
+
+    estagio Estagio @relation("EstagioMotivoEncerramento", fields: [estagioId], references: [id])
+
+    @@map("motivo_encerramento_estagio")
+}
+
+model EstagioHorario {
+    id            Int       @id @default(autoincrement()) @map("id_estagio_horario")
+    estagioId     Int       @map("estagio_id")
+    diaSemana     DiaSemana @map("dia_semana")
+    horarioInicio DateTime  @map("horario_inicio")
+    horarioFim    DateTime  @map("horario_fim")
+    createdAt     DateTime  @default(now()) @map("data_criacao")
+    updatedAt     DateTime  @updatedAt @map("data_atualizacao")
+
+    estagio Estagio @relation(fields: [estagioId], references: [id])
+
+    @@map("estagio_horario")
+}
+
+model RelatorioEstagio {
+    id           Int           @id @default(autoincrement()) @map("id_relatorio")
+    estagioId    Int           @map("estagio_id")
+    tipo         TipoRelatorio @map("tipo_relatorio")
+    prazoEntrega DateTime      @map("prazo_entrega")
+    dataEntregue DateTime?     @map("data_entregue")
+    observacao   String?       @map("observacao")
+    createdAt    DateTime      @default(now()) @map("data_criacao")
+    updatedAt    DateTime      @updatedAt @map("data_atualizacao")
+
+    estagio Estagio @relation(fields: [estagioId], references: [id])
+
+    @@unique([estagioId, tipo])
+    @@map("relatorio_estagio")
+}
+
+enum TipoEstagio {
+    Obrigatorio    @map("Obrigatório")
+    NaoObrigatorio @map("Não Obrigatório")
+
+    @@map("tipo_estagio")
+}
+
+enum StatusEstagio {
+    Ativo     @map("Ativo")
+    Cancelado @map("Cancelado")
+    Concluido @map("Concluído")
+
+    @@map("status")
+}
+
+enum DiaSemana {
+    Domingo
+    Segunda
+    Terca
+    Quarta
+    Quinta
+    Sexta
+    Sabado
+
+    @@map("dia_semana")
+}
+
+enum TipoRelatorio {
+    Inicial
+    Parcial
+    Final
+
+    @@map("tipo_relatorio")
+}
