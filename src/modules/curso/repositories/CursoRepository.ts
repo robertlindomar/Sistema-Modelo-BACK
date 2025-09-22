@@ -31,14 +31,38 @@ export class CursoRepository {
         return CursoModel.prismaParaModel(novoCurso);
     }
 
-    async listar(pagination?: PaginationQuery): Promise<{ cursos: CursoModel[], total: number }> {
+    async listar(pagination?: PaginationQuery & { search?: string; nome?: string; habilitacao?: string; nivel?: string }): Promise<{ cursos: CursoModel[], total: number }> {
+        const where: any = {};
+        const search = (pagination as any)?.search as string | undefined;
+        const nome = (pagination as any)?.nome as string | undefined;
+        const habilitacao = (pagination as any)?.habilitacao as string | undefined;
+        const nivel = (pagination as any)?.nivel as string | undefined;
+
+        if (search && search.trim()) {
+            where.OR = [
+                { nome: { contains: search } },
+                { habilitacao: { contains: search } },
+                { nivel: { contains: search } }
+            ];
+        }
+        if (nome && nome.trim()) {
+            where.nome = { contains: nome };
+        }
+        if (habilitacao && habilitacao.trim()) {
+            where.habilitacao = { contains: habilitacao };
+        }
+        if (nivel && nivel.trim()) {
+            where.nivel = { contains: nivel };
+        }
+
         const [cursos, total] = await Promise.all([
             prisma.curso.findMany({
+                where,
                 skip: pagination?.skip,
                 take: pagination?.limit,
                 orderBy: { createdAt: 'desc' }
             }),
-            prisma.curso.count()
+            prisma.curso.count({ where })
         ]);
 
         return {

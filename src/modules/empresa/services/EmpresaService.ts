@@ -20,7 +20,7 @@ export class EmpresaService {
         return empresa.toResponse();
     }
 
-    async listar(pagination?: PaginationQuery): Promise<PaginationResponse<EmpresaComCidadeResponseDTO>> {
+    async listar(pagination?: PaginationQuery & { search?: string; nome?: string; cnpj?: string }): Promise<PaginationResponse<EmpresaComCidadeResponseDTO>> {
         const { empresas, total } = await this.empresaRepository.listar(pagination);
         const empresasResponse = empresas.map(empresa => empresa.toResponse());
         

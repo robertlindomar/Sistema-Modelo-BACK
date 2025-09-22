@@ -20,7 +20,7 @@ export class CidadeService {
         return cidade.toResponse();
     }
 
-    async listar(pagination?: PaginationQuery): Promise<PaginationResponse<CidadeResponseDTO>> {
+    async listar(pagination?: PaginationQuery & { search?: string; nome?: string; uf?: string }): Promise<PaginationResponse<CidadeResponseDTO>> {
         const { cidades, total } = await this.cidadeRepository.listar(pagination);
         const cidadesResponse = cidades.map(cidade => cidade.toResponse());
         

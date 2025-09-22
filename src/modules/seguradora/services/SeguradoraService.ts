@@ -21,7 +21,7 @@ export class SeguradoraService {
         return seguradora.toResponse();
     }
 
-    async listar(pagination?: PaginationQuery): Promise<PaginationResponse<SeguradoraResponseDTO>> {
+    async listar(pagination?: PaginationQuery & { search?: string; nome?: string }): Promise<PaginationResponse<SeguradoraResponseDTO>> {
         const { seguradoras, total } = await this.seguradoraRepository.listar(pagination);
         const seguradorasResponse = seguradoras.map(seguradora => seguradora.toResponse());
         

@@ -28,8 +28,13 @@ export class EstagioHorarioRepository {
         return EstagioHorarioModel.prismaParaModel(novo);
     }
 
-    async listar(): Promise<EstagioHorarioModel[]> {
-        const list = await prisma.estagioHorario.findMany();
+    async listar(params?: { search?: string }): Promise<EstagioHorarioModel[]> {
+        const where: any = {};
+        const search = params?.search;
+        if (search && search.trim()) {
+            // Não há relação direta aqui; a busca por estagiário/empresa é feita na listagem de estágios
+        }
+        const list = await prisma.estagioHorario.findMany({ where });
         return list.map(h => EstagioHorarioModel.prismaParaModel(h));
     }
 

@@ -23,7 +23,7 @@ export class EstagioService {
         return estagio.toResponse();
     }
 
-    async listar(pagination?: PaginationQuery): Promise<PaginationResponse<EstagioCompletoResponseDTO>> {
+    async listar(pagination?: PaginationQuery & { search?: string }): Promise<PaginationResponse<EstagioCompletoResponseDTO>> {
         const { estagios, total } = await this.repository.listar(pagination);
         const estagiosResponse = estagios.map(e => e.toResponse());
         

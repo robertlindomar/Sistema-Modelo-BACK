@@ -21,7 +21,7 @@ export class CursoService {
         return curso.toResponse();
     }
 
-    async listar(pagination?: PaginationQuery): Promise<PaginationResponse<CursoResponseDTO>> {
+    async listar(pagination?: PaginationQuery & { search?: string; nome?: string; habilitacao?: string; nivel?: string }): Promise<PaginationResponse<CursoResponseDTO>> {
         const { cursos, total } = await this.cursoRepository.listar(pagination);
         const cursosResponse = cursos.map(curso => curso.toResponse());
         

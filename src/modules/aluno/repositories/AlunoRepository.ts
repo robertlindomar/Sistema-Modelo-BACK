@@ -35,9 +35,37 @@ export class AlunoRepository {
         return AlunoModel.prismaParaModel(novo);
     }
 
-    async listar(pagination?: PaginationQuery): Promise<{ alunos: AlunoModel[], total: number }> {
+    async listar(pagination?: PaginationQuery & { search?: string; nome?: string; cpf?: string; curso?: string; cidade?: string }): Promise<{ alunos: AlunoModel[], total: number }> {
+        const where: any = {};
+
+        const search = (pagination as any)?.search as string | undefined;
+        const nome = (pagination as any)?.nome as string | undefined;
+        const cpf = (pagination as any)?.cpf as string | undefined;
+        const cursoNome = (pagination as any)?.curso as string | undefined;
+        const cidadeNome = (pagination as any)?.cidade as string | undefined;
+
+        if (search && search.trim()) {
+            where.OR = [
+                { nome: { contains: search } },
+                { cpf: { contains: search } }
+            ];
+        }
+        if (nome && nome.trim()) {
+            where.nome = { contains: nome };
+        }
+        if (cpf && cpf.trim()) {
+            where.cpf = { contains: cpf };
+        }
+        if (cursoNome && cursoNome.trim()) {
+            where.curso = { nome: { contains: cursoNome } };
+        }
+        if (cidadeNome && cidadeNome.trim()) {
+            where.cidade = { nome: { contains: cidadeNome } };
+        }
+
         const [alunos, total] = await Promise.all([
             prisma.aluno.findMany({
+                where,
                 skip: pagination?.skip,
                 take: pagination?.limit,
                 include: {
@@ -46,7 +74,7 @@ export class AlunoRepository {
                 },
                 orderBy: { createdAt: 'desc' }
             }),
-            prisma.aluno.count()
+            prisma.aluno.count({ where })
         ]);
 
         return {

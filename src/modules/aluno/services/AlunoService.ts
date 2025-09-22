@@ -19,7 +19,7 @@ export class AlunoService {
         return aluno.toResponse();
     }
 
-    async listar(pagination?: PaginationQuery): Promise<PaginationResponse<AlunoComCidadeCursoResponseDTO>> {
+    async listar(pagination?: PaginationQuery & { search?: string; nome?: string; cpf?: string; curso?: string; cidade?: string }): Promise<PaginationResponse<AlunoComCidadeCursoResponseDTO>> {
         const { alunos, total } = await this.alunoRepository.listar(pagination);
         const alunosResponse = alunos.map(aluno => aluno.toResponse());
         

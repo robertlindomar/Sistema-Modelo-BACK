@@ -38,9 +38,21 @@ export class EstagioRepository {
         return EstagioModel.prismaParaModel(novo);
     }
 
-    async listar(pagination?: PaginationQuery): Promise<{ estagios: EstagioModel[], total: number }> {
+    async listar(pagination?: PaginationQuery & { search?: string }): Promise<{ estagios: EstagioModel[], total: number }> {
+        const where: any = {};
+        const search = (pagination as any)?.search as string | undefined;
+
+        if (search && search.trim()) {
+            where.OR = [
+                { aluno: { nome: { contains: search } } },
+                { empresa: { nome: { contains: search } } },
+                { instituicao: { nome: { contains: search } } }
+            ];
+        }
+
         const [estagios, total] = await Promise.all([
             prisma.estagio.findMany({
+                where,
                 skip: pagination?.skip,
                 take: pagination?.limit,
                 include: {
@@ -52,7 +64,7 @@ export class EstagioRepository {
                 },
                 orderBy: { createdAt: 'desc' }
             }),
-            prisma.estagio.count()
+            prisma.estagio.count({ where })
         ]);
 
         return {

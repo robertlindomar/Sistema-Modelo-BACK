@@ -38,9 +38,29 @@ export class EmpresaRepository {
         return EmpresaModel.prismaParaModel(nova);
     }
 
-    async listar(pagination?: PaginationQuery): Promise<{ empresas: EmpresaModel[], total: number }> {
+    async listar(pagination?: PaginationQuery & { search?: string; nome?: string; cnpj?: string }): Promise<{ empresas: EmpresaModel[], total: number }> {
+        const where: any = {};
+        const search = (pagination as any)?.search as string | undefined;
+        const nome = (pagination as any)?.nome as string | undefined;
+        const cnpj = (pagination as any)?.cnpj as string | undefined;
+
+        if (search && search.trim()) {
+            where.OR = [
+                { nome: { contains: search } },
+                { nomeFantasia: { contains: search } },
+                { cnpj: { contains: search } }
+            ];
+        }
+        if (nome && nome.trim()) {
+            where.nome = { contains: nome };
+        }
+        if (cnpj && cnpj.trim()) {
+            where.cnpj = { contains: cnpj };
+        }
+
         const [empresas, total] = await Promise.all([
             prisma.empresa.findMany({
+                where,
                 skip: pagination?.skip,
                 take: pagination?.limit,
                 include: {
@@ -48,7 +68,7 @@ export class EmpresaRepository {
                 },
                 orderBy: { createdAt: 'desc' }
             }),
-            prisma.empresa.count()
+            prisma.empresa.count({ where })
         ]);
 
         return {

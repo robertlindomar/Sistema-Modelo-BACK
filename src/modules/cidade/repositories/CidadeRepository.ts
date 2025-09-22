@@ -33,14 +33,33 @@ export class CidadeRepository {
         return CidadeModel.prismaParaModel(novaCidade);
     }
 
-    async listar(pagination?: PaginationQuery): Promise<{ cidades: CidadeModel[], total: number }> {
+    async listar(pagination?: PaginationQuery & { search?: string; nome?: string; uf?: string }): Promise<{ cidades: CidadeModel[], total: number }> {
+        const where: any = {};
+        const search = (pagination as any)?.search as string | undefined;
+        const nome = (pagination as any)?.nome as string | undefined;
+        const uf = (pagination as any)?.uf as string | undefined;
+
+        if (search && search.trim()) {
+            where.OR = [
+                { nome: { contains: search } },
+                { uf: { contains: search.toUpperCase() } }
+            ];
+        }
+        if (nome && nome.trim()) {
+            where.nome = { contains: nome };
+        }
+        if (uf && uf.trim()) {
+            where.uf = { contains: uf.toUpperCase() };
+        }
+
         const [cidades, total] = await Promise.all([
             prisma.cidade.findMany({
+                where,
                 skip: pagination?.skip,
                 take: pagination?.limit,
                 orderBy: { createdAt: 'desc' }
             }),
-            prisma.cidade.count()
+            prisma.cidade.count({ where })
         ]);
 
         return {

@@ -40,9 +40,9 @@ export class RelatorioEstagioRepository {
 
         if (params?.search) {
             where.OR = [
-                { observacao: { contains: params.search, mode: 'insensitive' } },
-                { estagio: { aluno: { nome: { contains: params.search, mode: 'insensitive' } } } },
-                { estagio: { empresa: { nome: { contains: params.search, mode: 'insensitive' } } } }
+                { observacao: { contains: params.search } },
+                { estagio: { aluno: { nome: { contains: params.search } } } },
+                { estagio: { empresa: { nome: { contains: params.search } } } }
             ];
         }
 

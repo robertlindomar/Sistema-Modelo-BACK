@@ -19,7 +19,7 @@ export class InstituicaoService {
         return instituicao.toResponse();
     }
 
-    async listar(pagination?: PaginationQuery): Promise<PaginationResponse<InstituicaoComCidadeResponseDTO>> {
+    async listar(pagination?: PaginationQuery & { search?: string; nome?: string; cnpj?: string }): Promise<PaginationResponse<InstituicaoComCidadeResponseDTO>> {
         const { instituicoes, total } = await this.repository.listar(pagination);
         const instituicoesResponse = instituicoes.map(i => i.toResponse());
         

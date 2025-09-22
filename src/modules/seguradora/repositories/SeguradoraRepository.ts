@@ -26,14 +26,26 @@ export class SeguradoraRepository {
         return SeguradoraModel.prismaParaModel(nova);
     }
 
-    async listar(pagination?: PaginationQuery): Promise<{ seguradoras: SeguradoraModel[], total: number }> {
+    async listar(pagination?: PaginationQuery & { search?: string; nome?: string }): Promise<{ seguradoras: SeguradoraModel[], total: number }> {
+        const where: any = {};
+        const search = (pagination as any)?.search as string | undefined;
+        const nome = (pagination as any)?.nome as string | undefined;
+
+        if (search && search.trim()) {
+            where.nome = { contains: search };
+        }
+        if (nome && nome.trim()) {
+            where.nome = { contains: nome };
+        }
+
         const [seguradoras, total] = await Promise.all([
             prisma.seguradora.findMany({
+                where,
                 skip: pagination?.skip,
                 take: pagination?.limit,
                 orderBy: { createdAt: 'desc' }
             }),
-            prisma.seguradora.count()
+            prisma.seguradora.count({ where })
         ]);
 
         return {

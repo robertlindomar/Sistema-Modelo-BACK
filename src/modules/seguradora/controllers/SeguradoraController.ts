@@ -21,7 +21,7 @@ export class SeguradoraController {
     async listar(req: Request, res: Response, next: NextFunction): Promise<any> {
         try {
             const pagination = processPaginationParams(req.query);
-            const resultado = await this.service.listar(pagination);
+            const resultado = await this.service.listar({ ...req.query, ...pagination });
             return res.status(200).json(resultado);
         } catch (error) {
             next(error);
