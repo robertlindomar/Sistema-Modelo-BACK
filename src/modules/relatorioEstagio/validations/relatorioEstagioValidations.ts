@@ -2,6 +2,7 @@ import {
   validateData
 } from "../../../shared/utils/validations";
 import { TipoRelatorio } from "@prisma/client";
+import { normalizarHorario } from "../../../shared/utils/normalizarHorario";
 
 /**
  * Validações específicas do módulo RelatorioEstagio
@@ -10,6 +11,19 @@ import { TipoRelatorio } from "@prisma/client";
 // Validação para criar relatório
 export function validateCreateRelatorio(data: any): string[] {
   const errors: string[] = [];
+  const toDateOnly = (input: Date | string): Date => {
+    if (typeof input === 'string') {
+      const m = input.match(/^(\d{4})-(\d{2})-(\d{2})/);
+      if (m) {
+        const year = Number(m[1]);
+        const monthIndex = Number(m[2]) - 1;
+        const day = Number(m[3]);
+        return new Date(year, monthIndex, day);
+      }
+    }
+    const d = new Date(input);
+    return new Date(d.getFullYear(), d.getMonth(), d.getDate());
+  };
   
   // Validações obrigatórias
   if (!data.estagioId) {
@@ -29,13 +43,18 @@ export function validateCreateRelatorio(data: any): string[] {
   } else {
     errors.push(...validateData(data.prazoEntrega, "Prazo de entrega"));
     
-    // Validar se prazo é futuro ou igual à data atual
-    const prazo = new Date(data.prazoEntrega);
-    const hoje = new Date();
-    // Permitir prazo igual à data atual (hoje)
-    if (prazo < hoje) {
+    // Validar se prazo é futuro ou igual à data atual (comparando apenas data)
+    const prazo = toDateOnly(data.prazoEntrega);
+    const hoje = toDateOnly(new Date());
+    if (prazo.getTime() < hoje.getTime()) {
       errors.push("Prazo de entrega deve ser posterior ou igual à data atual");
     }
+
+    // Reescrever para meio-dia local para persistência estável
+    const noon = toDateOnly(data.prazoEntrega);
+    noon.setHours(12, 0, 0, 0);
+    data.prazoEntrega = noon.toISOString();
+    
   }
   
   // Validações opcionais
@@ -43,19 +62,24 @@ export function validateCreateRelatorio(data: any): string[] {
     errors.push(...validateData(data.dataEntregue, "Data de entrega"));
     
     // Validar se data de entrega é válida
-    const entregue = new Date(data.dataEntregue);
-    const hoje = new Date();
-    if (entregue > hoje) {
+    const entregue = toDateOnly(data.dataEntregue);
+    const hoje = toDateOnly(new Date());
+    if (entregue.getTime() > hoje.getTime()) {
       errors.push("Data de entrega não pode ser futura");
     }
     
     // Validar se data de entrega não é posterior ao prazo (permite igual)
     if (data.prazoEntrega) {
-      const prazo = new Date(data.prazoEntrega);
-      if (entregue > prazo) {
+      const prazo = toDateOnly(data.prazoEntrega);
+      if (entregue.getTime() > prazo.getTime()) {
         errors.push("Data de entrega não pode ser posterior ao prazo de entrega");
       }
     }
+
+    // Reescrever data entregue para meio-dia local
+    const noon = toDateOnly(data.dataEntregue);
+    noon.setHours(12, 0, 0, 0);
+    data.dataEntregue = noon.toISOString();
   }
   
   // Validações de tamanho
@@ -69,6 +93,19 @@ export function validateCreateRelatorio(data: any): string[] {
 // Validação para atualizar relatório
 export function validateUpdateRelatorio(data: any): string[] {
   const errors: string[] = [];
+  const toDateOnly = (input: Date | string): Date => {
+    if (typeof input === 'string') {
+      const m = input.match(/^(\d{4})-(\d{2})-(\d{2})/);
+      if (m) {
+        const year = Number(m[1]);
+        const monthIndex = Number(m[2]) - 1;
+        const day = Number(m[3]);
+        return new Date(year, monthIndex, day);
+      }
+    }
+    const d = new Date(input);
+    return new Date(d.getFullYear(), d.getMonth(), d.getDate());
+  };
   
   // Validações opcionais (apenas se fornecidas)
   if (data.estagioId !== undefined) {
@@ -86,32 +123,39 @@ export function validateUpdateRelatorio(data: any): string[] {
   if (data.prazoEntrega !== undefined) {
     errors.push(...validateData(data.prazoEntrega, "Prazo de entrega"));
     
-    // Validar se prazo é futuro ou igual à data atual
-    const prazo = new Date(data.prazoEntrega);
-    const hoje = new Date();
-    // Permitir prazo igual à data atual (hoje)
-    if (prazo < hoje) {
+    // Validar se prazo é futuro ou igual à data atual (comparando apenas data)
+    const prazo = toDateOnly(data.prazoEntrega);
+    const hoje = toDateOnly(new Date());
+    if (prazo.getTime() < hoje.getTime()) {
       errors.push("Prazo de entrega deve ser posterior ou igual à data atual");
     }
+
+    const noon = toDateOnly(data.prazoEntrega);
+    noon.setHours(12, 0, 0, 0);
+    data.prazoEntrega = noon.toISOString();
   }
   
   if (data.dataEntregue !== undefined && data.dataEntregue !== '') {
     errors.push(...validateData(data.dataEntregue, "Data de entrega"));
     
     // Validar se data de entrega é válida
-    const entregue = new Date(data.dataEntregue);
-    const hoje = new Date();
-    if (entregue > hoje) {
+    const entregue = toDateOnly(data.dataEntregue);
+    const hoje = toDateOnly(new Date());
+    if (entregue.getTime() > hoje.getTime()) {
       errors.push("Data de entrega não pode ser futura");
     }
     
     // Validar se data de entrega não é posterior ao prazo (permite igual)
     if (data.prazoEntrega) {
-      const prazo = new Date(data.prazoEntrega);
-      if (entregue > prazo) {
+      const prazo = toDateOnly(data.prazoEntrega);
+      if (entregue.getTime() > prazo.getTime()) {
         errors.push("Data de entrega não pode ser posterior ao prazo de entrega");
       }
     }
+
+    const noon = toDateOnly(data.dataEntregue);
+    noon.setHours(12, 0, 0, 0);
+    data.dataEntregue = noon.toISOString();
   }
   
   // Validações de tamanho
