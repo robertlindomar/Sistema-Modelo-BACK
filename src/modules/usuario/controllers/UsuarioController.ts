@@ -91,4 +91,24 @@ export class UsuarioController {
             next(error);
         }
     }
+
+    async forgotPassword(req: Request, res: Response, next: NextFunction): Promise<any> {
+        try {
+            const { email } = req.body as { email: string };
+            await this.service.solicitarRecuperacaoSenha(email);
+            return res.status(200).json({ mensagem: "Se o email existir, enviaremos instruções" });
+        } catch (error) {
+            next(error);
+        }
+    }
+
+    async resetPassword(req: Request, res: Response, next: NextFunction): Promise<any> {
+        try {
+            const { token, novaSenha } = req.body as { token: string; novaSenha: string };
+            await this.service.redefinirSenha(token, novaSenha);
+            return res.status(200).json({ mensagem: "Senha redefinida com sucesso" });
+        } catch (error) {
+            next(error);
+        }
+    }
 }

@@ -52,7 +52,7 @@ export class UsuarioModel {
             id: this.id,
             nome: this.nome,
             email: this.email,
-            createdAt: this.createdAt,
+            createdAt: this.createdAt?.toISOString?.() || new Date(this.createdAt).toISOString(),
         };
     }
 

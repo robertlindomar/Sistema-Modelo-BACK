@@ -29,7 +29,7 @@ const PORT = process.env.PORT ? Number(process.env.PORT) : 3000;
 
 // Escutar em 0.0.0.0 (obrigatório para ambientes como Render)
 app.listen(PORT, '0.0.0.0', () => {
-    console.log(`Servidor rodando em http://localhost:${PORT}`);
+    console.log(`Servidor rodando em ${process.env.URL_APP}`);
 });
 
 // Exportar app para testes

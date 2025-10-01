@@ -40,7 +40,7 @@ export class UsuarioRepository {
         ]);
 
         return {
-            usuarios: usuarios.map(u => UsuarioModel.prismaParaModel(u)),
+            usuarios: usuarios.map((u: any) => UsuarioModel.prismaParaModel(u)),
             total
         };
     }
@@ -60,6 +60,39 @@ export class UsuarioRepository {
         if (!existente) throw new AppError("Usuário não encontrado", 404);
 
         return UsuarioModel.prismaParaModel(existente);
+    }
+
+    async setResetToken(email: string, token: string, expiresAt: Date): Promise<void> {
+        if (!email) throw new AppError("Email é obrigatório", 400);
+        await prisma.usuario.update({
+            where: { email },
+            data: {
+                resetToken: token,
+                resetTokenExpires: expiresAt,
+            }
+        });
+    }
+
+    async buscarPorResetToken(token: string): Promise<UsuarioModel | null> {
+        const existente = await prisma.usuario.findFirst({
+            where: {
+                resetToken: token,
+                resetTokenExpires: {
+                    gt: new Date(),
+                },
+            }
+        });
+        return existente ? UsuarioModel.prismaParaModel(existente) : null;
+    }
+
+    async limparResetToken(id: number): Promise<void> {
+        await prisma.usuario.update({
+            where: { id },
+            data: {
+                resetToken: null,
+                resetTokenExpires: null,
+            }
+        });
     }
 
     async atualizar(id: number, data: UsuarioUpdateDTO): Promise<UsuarioModel> {

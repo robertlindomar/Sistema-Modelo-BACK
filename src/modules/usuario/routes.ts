@@ -6,7 +6,9 @@ import {
     validateCreateUsuario, 
     validateUpdateUsuario, 
     validateLogin, 
-    validateTrocarSenha 
+    validateTrocarSenha,
+    validateForgotPassword,
+    validateResetPassword
 } from "./validations/usuarioValidations";
 
 export function usuarioRoutes() {
@@ -39,6 +41,16 @@ export function usuarioRoutes() {
     router.post("/login", 
         createValidationMiddleware([validateLogin]), 
         (req: Request, res: Response, next: NextFunction) => usuarioController.login(req, res, next)
+    );
+
+    // Recuperação de senha
+    router.post("/forgot-password",
+        createValidationMiddleware([validateForgotPassword]),
+        (req: Request, res: Response, next: NextFunction) => usuarioController.forgotPassword(req, res, next)
+    );
+    router.post("/reset-password",
+        createValidationMiddleware([validateResetPassword]),
+        (req: Request, res: Response, next: NextFunction) => usuarioController.resetPassword(req, res, next)
     );
     
     router.put("/:id", 

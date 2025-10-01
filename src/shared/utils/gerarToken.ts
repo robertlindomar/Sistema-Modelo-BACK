@@ -1,10 +1,9 @@
 // utils/gerarToken.ts
-import { Usuario } from "@prisma/client";
 import jwt from "jsonwebtoken";
 
 const JWT_SECRET = process.env.JWT_SECRET || "minha-chave-secreta";
 
-export function gerarToken(usuario: Usuario): string {
+export function gerarToken(usuario: { id: number }): string {
     const id = usuario.id;
 
 

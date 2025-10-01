@@ -66,3 +66,20 @@ export function validateTrocarSenha(data: any): string[] {
   
   return errors;
 }
+
+// Validação para esqueci a senha
+export function validateForgotPassword(data: any): string[] {
+  const errors: string[] = [];
+  errors.push(...validateEmailFormat(data.email));
+  return errors;
+}
+
+// Validação para resetar a senha
+export function validateResetPassword(data: any): string[] {
+  const errors: string[] = [];
+  if (!data.token || typeof data.token !== 'string') {
+    errors.push("Token é obrigatório");
+  }
+  errors.push(...validateSenha(data.novaSenha));
+  return errors;
+}

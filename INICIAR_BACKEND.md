@@ -34,7 +34,7 @@ npm run dev
 
 # Modo produção
 npm run build
-npm start
+npm  start
 ```
 
 ## 🌐 **Endpoints disponíveis:**
